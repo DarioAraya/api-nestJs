@@ -1,5 +1,9 @@
 import { HttpService } from '@nestjs/axios';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotAcceptableException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { Model } from 'mongoose';
@@ -31,14 +35,18 @@ export class PostsService {
       date,
       _tags,
     });
-    const result = await newPost.save();
-    return result._id as string;
+    try {
+      const result = await newPost.save();
+      return result._id as string;
+    } catch (error) {
+      console.log(`ID ${newPost._id} ALREADY EXISTS `);
+    }
   }
 
   @Cron('0 * * * *') //Cada una hora se ejecutara este metodo.
   async postData() {
     const response = await this.http
-      .get('http://hn.algolia.com/api/v1/search_by_date?query=nodejs')
+      .get(`http://hn.algolia.com/api/v1/search_by_date?query=nodejs`)
       .toPromise();
     const allData = response.data.hits;
 
@@ -95,7 +103,7 @@ export class PostsService {
   async deletePost(postId: string) {
     const result = await this.postModel.deleteOne({ _id: postId }).exec();
     if (result.deletedCount === 0) {
-      throw new NotFoundException('Could not find product.');
+      throw new NotFoundException('Could not find post.');
     }
   }
 
@@ -104,11 +112,11 @@ export class PostsService {
     try {
       post = await this.postModel.findById(_id);
     } catch (error) {
-      throw new NotFoundException('Could not find product.');
+      throw new NotFoundException('Could not find post.');
     }
 
     if (!post) {
-      throw new NotFoundException('Could not find product.');
+      throw new NotFoundException('Could not find post.');
     }
     return post;
   }

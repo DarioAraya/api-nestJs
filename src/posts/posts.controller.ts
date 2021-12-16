@@ -31,6 +31,7 @@ export class PostsController {
       postDate,
       postTags,
     );
+
     return { id: generatedId };
   }
 
