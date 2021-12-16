@@ -58,6 +58,7 @@ export class PostsService {
 
   async getPosts() {
     const posts = await this.postModel.find().exec();
+
     return posts
       .map((post) => ({
         id: post._id,
@@ -110,5 +111,13 @@ export class PostsService {
       throw new NotFoundException('Could not find product.');
     }
     return post;
+  }
+
+  find(options) {
+    return this.postModel.find(options);
+  }
+
+  count(options) {
+    return this.postModel.count(options).exec();
   }
 }

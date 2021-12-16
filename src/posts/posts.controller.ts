@@ -1,5 +1,14 @@
-import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Req,
+} from '@nestjs/common';
 import { PostsService } from './posts.service';
+import { Request } from 'express';
 
 @Controller('posts')
 export class PostsController {
@@ -31,9 +40,53 @@ export class PostsController {
     return posts;
   }
 
-  @Get(':id')
+  /*@Get(':id')
   getPost(@Param('id') postId: string) {
     return this.postsService.getSinglePost(postId);
+  }*/
+
+  @Get('/search')
+  async search(@Req() req: Request) {
+    let options = {};
+
+    //Filtrar por usuario
+    if (req.query.user) {
+      options = {
+        $or: [{ username: new RegExp(req.query.user.toString(), 'i') }],
+      };
+    }
+
+    //Filtrar por tags
+    if (req.query.tags) {
+      options = {
+        $or: [{ _tags: new RegExp(req.query.tags.toString(), 'i') }],
+      };
+    }
+
+    //Filtrar por title
+    if (req.query.title) {
+      options = {
+        $or: [{ title: new RegExp(req.query.title.toString(), 'i') }],
+      };
+    }
+
+    const query = this.postsService.find(options);
+
+    const page: number = parseInt(req.query.page as any) || 1;
+    const limit = 5;
+    const total = await this.postsService.count(options);
+
+    const data = await query
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .exec();
+
+    return {
+      data,
+      total,
+      page,
+      last_page: Math.ceil(total / limit),
+    };
   }
 
   @Delete(':id')
