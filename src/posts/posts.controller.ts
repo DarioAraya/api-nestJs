@@ -6,14 +6,17 @@ import {
   Param,
   Post,
   Req,
+  UseGuards,
 } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { Request } from 'express';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('posts')
 export class PostsController {
   constructor(private readonly postsService: PostsService) {}
 
+  @UseGuards(AuthGuard('jwt'))
   @Post()
   async addPost(
     @Body('id') postId: string,
@@ -35,6 +38,7 @@ export class PostsController {
     return { id: generatedId };
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Get()
   async getAllPost() {
     const posts = await this.postsService.getPosts();
@@ -45,7 +49,7 @@ export class PostsController {
   getPost(@Param('id') postId: string) {
     return this.postsService.getSinglePost(postId);
   }*/
-
+  @UseGuards(AuthGuard('jwt'))
   @Get('/search')
   async search(@Req() req: Request) {
     let options = {};
@@ -128,6 +132,7 @@ export class PostsController {
     };
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Delete(':id')
   async removePost(@Param('id') postId: string) {
     await this.postsService.deletePost(postId);
