@@ -4,6 +4,7 @@
 
 # Logs
 logs
+*.env
 *.log
 npm-debug.log*
 pnpm-debug.log*
@@ -26,7 +27,7 @@ lerna-debug.log*
 *.launch
 .settings/
 *.sublime-workspace
-.env
+
 
 # IDE - VSCode
 .vscode/*
