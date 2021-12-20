@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 
 import { AppController } from './app.controller';
@@ -8,11 +9,12 @@ import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     PostsModule,
     UserModule,
-    MongooseModule.forRoot(
-      'mongodb+srv://Sofia:FrBkVrDuMTg1oaWD@cluster0.psfel.mongodb.net/hackerNews?retryWrites=true&w=majority',
-    ),
+    MongooseModule.forRoot(process.env.DB_URL),
   ],
   controllers: [AppController],
   providers: [AppService],
