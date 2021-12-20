@@ -5,17 +5,37 @@ import {
   Get,
   Param,
   Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { Request } from 'express';
 import { AuthGuard } from '@nestjs/passport';
+import {
+  ApiBearerAuth,
+  ApiOkResponse,
+  ApiProperty,
+  ApiPropertyOptional,
+} from '@nestjs/swagger';
+
+class MyParams {
+  @ApiPropertyOptional()
+  page: string;
+  @ApiPropertyOptional()
+  user: string;
+  @ApiPropertyOptional()
+  tags: string;
+  @ApiPropertyOptional()
+  title: string;
+  @ApiPropertyOptional()
+  month: string;
+}
 
 @Controller('posts')
 export class PostsController {
   constructor(private readonly postsService: PostsService) {}
-
+  /*
   @UseGuards(AuthGuard('jwt'))
   @Post()
   async addPost(
@@ -36,10 +56,12 @@ export class PostsController {
     );
 
     return { id: generatedId };
-  }
+  }*/
 
   @UseGuards(AuthGuard('jwt'))
   @Get()
+  @ApiOkResponse({ description: 'Show all the posts' })
+  @ApiBearerAuth()
   async getAllPost() {
     const posts = await this.postsService.getPosts();
     return posts;
@@ -51,7 +73,12 @@ export class PostsController {
   }*/
   @UseGuards(AuthGuard('jwt'))
   @Get('/search')
-  async search(@Req() req: Request) {
+  @ApiOkResponse({
+    description:
+      'Show all the posts paginated, also can be filter by user, tags, title and month word(Filter by month only work with the five elements on the page) ',
+  })
+  @ApiBearerAuth()
+  async search(@Req() req: Request, @Query() params: MyParams) {
     let options = {};
 
     //Filtrar por usuario
@@ -117,13 +144,23 @@ export class PostsController {
       data = dates;
     };
 
-    //Filtrar por title
+    //Filtrar por mes
     if (req.query.month) {
       options = {
         $or: [{ month: filterByMonth(req.query.month.toString()) }],
       };
     }
 
+    data.sort((a, b) => {
+      //Script para devolver el post mas reciente.
+      if (a.date > b.date) {
+        return -1;
+      }
+      if (a.date < b.date) {
+        return 1;
+      }
+      return 0;
+    });
     return {
       data,
       total,
@@ -134,8 +171,11 @@ export class PostsController {
 
   @UseGuards(AuthGuard('jwt'))
   @Delete(':id')
+  @ApiOkResponse({ description: 'Delete a post' })
+  @ApiBearerAuth()
   async removePost(@Param('id') postId: string) {
     await this.postsService.deletePost(postId);
-    return null;
+    const message = `The post was deleted`;
+    return message;
   }
 }
