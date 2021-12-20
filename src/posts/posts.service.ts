@@ -43,7 +43,7 @@ export class PostsService {
     }
   }
 
-  @Cron('0 * * * *') //Cada una hora se ejecutara este metodo.
+  @Cron('0 * * * *') //Every hour this method will be executed.
   async postData() {
     const response = await this.http
       .get(`http://hn.algolia.com/api/v1/search_by_date?query=nodejs`)
@@ -77,7 +77,7 @@ export class PostsService {
         tags: post._tags,
       }))
       .sort((a, b) => {
-        //Script para devolver el post mas reciente.
+        //Script to return the most recent post.
         if (a.date > b.date) {
           return -1;
         }

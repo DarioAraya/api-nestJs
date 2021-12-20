@@ -81,21 +81,21 @@ export class PostsController {
   async search(@Req() req: Request, @Query() params: MyParams) {
     let options = {};
 
-    //Filtrar por usuario
+    //Filter by user
     if (req.query.user) {
       options = {
         $or: [{ username: new RegExp(req.query.user.toString(), 'i') }],
       };
     }
 
-    //Filtrar por tags
+    //Filter by tag
     if (req.query.tags) {
       options = {
         $or: [{ _tags: new RegExp(req.query.tags.toString(), 'i') }],
       };
     }
 
-    //Filtrar por title
+    //Filter by title
     if (req.query.title) {
       options = {
         $or: [{ title: new RegExp(req.query.title.toString(), 'i') }],
@@ -144,7 +144,7 @@ export class PostsController {
       data = dates;
     };
 
-    //Filtrar por mes
+    //Filter by month
     if (req.query.month) {
       options = {
         $or: [{ month: filterByMonth(req.query.month.toString()) }],
@@ -152,7 +152,7 @@ export class PostsController {
     }
 
     data.sort((a, b) => {
-      //Script para devolver el post mas reciente.
+      //Script to return the most recent post.
       if (a.date > b.date) {
         return -1;
       }
